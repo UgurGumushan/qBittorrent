@@ -123,6 +123,22 @@ namespace MacUtils
         }
     }
 
+    void openFile(const Path &path)
+    {
+        @autoreleasepool
+        {
+            NSURL *pathURL = [NSURL fileURLWithPath:path.toString().toNSString()];
+
+            // In some unknown way, calling NSWorkspace from the Qt main loop corrupts
+            // the event loop causing a crash in QApplication::exec() on the next event
+            // or on application exit. Running it in the background avoids the issue.
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
+            {
+                [[NSWorkspace sharedWorkspace] openURL:pathURL];
+            });
+        }
+    }
+
     void openFiles(const PathList &pathList)
     {
         @autoreleasepool
